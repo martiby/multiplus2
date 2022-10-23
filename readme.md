@@ -11,7 +11,7 @@ ESS Mode 3. **No GX device or Venus device is needed.** The python script has no
 
 # Simple demo application 
 
-multiplus2_demo.py
+`multiplus2_demo.py`
 
     mp2.update()    # read all information
     print(mp2.data)  
@@ -21,6 +21,6 @@ multiplus2_demo.py
 
 # Demo Applikation in tkinter
 
-Screenshot of multiplus2_gui.py 
+Screenshot of `multiplus2_gui.py` 
 
 ![](doc/screenshot_multiplus2_gui.png)
