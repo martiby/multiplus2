@@ -50,7 +50,7 @@ class App:
     def timer(self):
         if self.ui_var_power_enable.get():
             self.set_p = self.ui_slider_set_power.get()
-            self.mp2.vebus.set_power(self.set_p)
+            self.mp2.command(self.set_p)
 
         self.mp2.update()
 
