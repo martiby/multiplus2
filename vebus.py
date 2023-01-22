@@ -178,7 +178,7 @@ class VEBus:
             self.open_port()  # open port
 
         try:
-            ids = [15, 16, 4, 5]  # up to 6x
+            ids = [15, 16, 4, 5, 13]  # up to 6x
             self.send_frame('F', [0x06] + ids)
         except IOError:
             self.serial = None
@@ -208,15 +208,16 @@ class VEBus:
 
         try:
             self.send_frame('X', [0x38])
-            frame = self.receive_frame(b'\x0B\xFF\x58')
+            frame = self.receive_frame(b'\x0D\xFF\x58')
             if frame[3] != 0x99:
                 raise Exception('invalid response')
-            inv_p, out_p, bat_u, bat_i = struct.unpack("<hhhh", frame[4:4 + 4 * 2])
+            inv_p, out_p, bat_u, bat_i, soc = struct.unpack("<hhhhh", frame[4:4 + 5 * 2])
             r = {'inv_p': -inv_p,
                  'out_p': out_p,
                  'bat_u': round(bat_u / 100, 2),
                  'bat_i': round(bat_i / 10, 1),
-                 'bat_p': round(bat_u / 100 * bat_i / 10)}
+                 'bat_p': round(bat_u / 100 * bat_i / 10),
+                 'soc': soc}
             self.log.info("read_snapshot: {}".format(r))
             return r
         except IOError:
@@ -244,7 +245,7 @@ class VEBus:
         try:
             data = struct.pack("<BBBh", 0x37, 0x00, 131, -power)  # cmd, flags, id, power
             self.send_frame('X', data)
-            rx = self.receive_frame(b'\x03\xFF\x58')
+            rx = self.receive_frame([b'\x05\xFF\x58', b'\x03\xFF\x58'])   # two different answers are possible
             if rx[3] == 0x87:
                 self.log.info("set_ess_power to {}W done".format(power))
                 return True
@@ -300,11 +301,19 @@ class VEBus:
         while time.perf_counter() < tout:
             rx += self.serial.read(500)
             time.sleep(0.010)
+            if isinstance(head, (list, tuple)):
+                for h in head:
+                    p = rx.find(h)
+                    if p >= 0:
+                        break
+            else:
+                p = rx.find(head)
 
-            p = rx.find(head)
-            flen = head[0] + 2  # expected full package length
-            if(p >= 0) and (len(rx) - p) >= flen:   #rx matches expected full package length
-                return rx[p:p+flen]
+            if (p >= 0):
+                flen = rx[p] + 2  # expected full package length
+                if (len(rx) - p) >= flen:  # rx matches expected full package length
+                    return rx[p:p + flen]
+
         if rx:
             raise Exception("invalid rx frame {}".format(self.format_hex(rx)))
         else:
