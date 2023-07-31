@@ -27,12 +27,6 @@ class MultiPlus2:
         self._wakeup = False
         self._sleep = False
 
-    def sleep(self):
-        self._sleep = True
-
-    def wakeup(self):
-        self._wakeup = True
-
 
     def connect(self):
         version = self.vebus.get_version()  # hide errors while scanning
