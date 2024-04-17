@@ -6,7 +6,7 @@ from vebus import VEBus
 """
 Multiplus-II, ESS Mode 3 
 
-23.10.2022 Martin Steppuhn
+22.01.2023 Martin Steppuhn
 """
 
 
@@ -40,9 +40,14 @@ class MultiPlus2:
             self.data = {'mk2_version': version}  # init dictionary
             time.sleep(0.1)
             if self.vebus.init_address():
-                self.data['state'] = 'init'
-                self.online = True
-                self.data_timeout = time.perf_counter() + self.timeout  # start timeout
+                time.sleep(0.1)
+                if self.vebus.scan_ess_assistant():
+                    self.data['state'] = 'init'
+                    self.online = True
+                    self.data_timeout = time.perf_counter() + self.timeout  # start timeout
+
+
+
 
 
     def command(self, power):

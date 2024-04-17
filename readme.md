@@ -1,7 +1,7 @@
 # Direct control of a Victron Multiplus II
 
 The script allows the direct control of the charging and feeding power in the 
-grid parallel operation. The Multiplus 2 is connected to a MK3 Inteface and controlled with 
+grid parallel operation. The Multiplus 2 is connected to a MK3 or MK2.2b Interface and controlled with 
 ESS Mode 3. **No GX device or Venus device is needed.** The python script has no dependencies.
 
     update()   # get the Multiplus-II status
