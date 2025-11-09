@@ -23,6 +23,7 @@ checksum is one byte
 23.10.2022 Martin Steppuhn
 27.11.2022 Martin Steppuhn  receive_frame() with quick and dirty start search
 22.01.2023 Martin Steppuhn  scan for ess assistant (previous hardcoded setpoint at ramid 131)    
+09.11.2014 Martin Steppuhn  set flag to prevent EEPROM write in set_power 
 """
 
 
@@ -227,7 +228,7 @@ class VEBus:
                  'bat_u': round(bat_u / 100, 2),
                  'bat_i': round(bat_i / 10, 1),
                  'bat_p': round(bat_u / 100 * bat_i / 10),
-                 'soc': soc}
+                 'soc': round(soc / 2, 1)}
             self.log.info("read_snapshot: {}".format(r))
             return r
         except IOError:
@@ -246,6 +247,8 @@ class VEBus:
 
         new rx :    03 FF 58 87 1F
 
+        Flag 0x02: Bit1 for RAM write only (no EEPROM)
+
         :param power: in watt
         :return: True/False
         """
@@ -253,7 +256,7 @@ class VEBus:
             self.open_port()  # open port
 
         try:
-            data = struct.pack("<BBBh", 0x37, 0x00, self.ess_setpoint_ram_id, -power)  # cmd, flags, id, power
+            data = struct.pack("<BBBh", 0x37, 0x02, self.ess_setpoint_ram_id, -power)  # cmd, flags, id, power
             self.send_frame('X', data)
             rx = self.receive_frame([b'\x05\xFF\x58', b'\x03\xFF\x58'])  # two different answers are possible
             if rx[3] == 0x87:
